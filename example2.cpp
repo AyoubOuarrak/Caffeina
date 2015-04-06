@@ -9,23 +9,27 @@
 #endif
 #include <algorithm>
 #include <iostream>
+#include "Shader.hpp"
+#include "Light.hpp"
 #include <cmath>
 
-#include "Shader.hpp"
-#include "Camera.hpp"
-#include "Light.hpp"
-
-// camera
-Caffeina::Camera camera;
 // shader object
 Caffeina::Shader shader;
 // light object
 Caffeina::Light light;
 
+// camera parameters
+float cRadius = 5.0f; // our radius distance from our character
+float xCam = 5; 
+float yCam = 5; 
+float zCam = 5; 
+float xCamRot = 0; 
+float yCamRot = 0; 
+float camAngle = 0.0;
+float lastx, lasty;
+
 void DrawGround(){
-   // How far on the Z-Axis and X-Axis the ground extends
-   GLfloat fExtent = 30.0f;
-   // The size of the separation between points
+   GLfloat fExtent = 10.0f;
    GLfloat fStep = 1.0f;
    GLfloat y = -0.4f;
    GLint iLine;
@@ -41,12 +45,22 @@ void DrawGround(){
    glEnd();
 }
 
+/*void camera() {
+   // rotate our camera on the x-axis (left and right)
+   glRotatef(xCamRot, 1.0, 0.0, 0.0);  
+   // rotate our camera on the y-axis (up and down)
+   glRotatef(yCamRot, 0.0, 1.0, 0.0);  
+   // translate the screento the position of our camera
+   glTranslated(-xCam, -yCam, -zCam); 
+}
+*/
 void initScene() {
    glEnable(GL_DEPTH_TEST);
    glDepthFunc(GL_LESS);
    glEnable(GL_SMOOTH);
    glShadeModel(GL_SMOOTH);
    shader.init("shader.vert", "shader.frag");
+
 }
 
 void draw() {
@@ -60,13 +74,17 @@ void renderScene() {
    glLoadIdentity();
    // turn on lights
    light.turnOn();
-   // enable camera movement
-   camera.enable();
+
+
+   glLoadIdentity();
+   glTranslatef(0.0f, 0.0f, -cRadius);
+   glRotatef(xCamRot,1.0,0.0,0.0);
+   glRotatef(yCamRot, 0.0, 1.0, 0.0);  
+   glTranslated(-xCam, 0.0f, -zCam); //translate the screen
 
    shader.bind();
    // draw ground
    DrawGround();
-
    // draw primitives
    draw();
    shader.unBind();
@@ -89,38 +107,75 @@ void reshape(int width, int height) {
 }
 
 void mouseMovement(int x, int y) {
-   camera.handleMouse(x, y);
+   //check the difference between the current x and the last x position
+   int diffx = x-lastx; 
+   //check the difference between the current y and the last y position
+   int diffy = y-lasty; 
+   //set lastx to the current x position
+   lastx = x; 
+   //set lasty to the current y position
+   lasty = y; 
+   //set the xrot to xrot with the addition of the difference in the y position
+   xCamRot -= (float) diffy; 
+   //set the xrot to yrot with the addition of the difference in the x position
+   yCamRot -= (float) diffx;    
+
+      // Limit loking up to vertically up
+   if(xCamRot < 0) {
+      xCamRot = 0;
+   }
+ 
+   // Limit looking down to vertically down
+   if (xCamRot > 90) {
+      xCamRot =  90;
+   }
 }
 
 void keyHandler(unsigned char key, int x, int y) {
    switch(key) {
       case 'A':
       case 'a':
-         camera.moveLeft();
+         float yrotrad3;
+         yrotrad3 = (yCamRot / 180 * 3.141592654f);
+         xCam -= float(cos(yrotrad3)) * 0.5;
+         zCam -= float(sin(yrotrad3)) * 0.5;
          break;
 
       case 'D':
       case 'd':
-         camera.moveRight();
+         float yrotrad2;
+         yrotrad2 = (yCamRot / 180 * 3.141592654f);
+         xCam += float(cos(yrotrad2)) * 0.5;
+         zCam += float(sin(yrotrad2)) * 0.5;
          break;
 
       case 's':
       case 'S':
-         camera.moveBackward();
+         float xrotrad1, yrotrad1;
+         yrotrad1 = (yCamRot / 180 * 3.141592654f);
+         xrotrad1 = (xCamRot / 180 * 3.141592654f); 
+         xCam -= float(sin(yrotrad1)) * 0.5;
+         zCam += float(cos(yrotrad1)) * 0.5;
+         yCam += float(sin(xrotrad1)) * 0.5;
          break;
 
       case 'W':
       case 'w':
-         camera.moveForward();
+         float xrotrad, yrotrad;
+         yrotrad = (yCamRot / 180 * 3.141592654f);
+         xrotrad = (xCamRot / 180 * 3.141592654f); 
+         xCam += float(sin(yrotrad)) * 0.5;
+         zCam -= float(cos(yrotrad)) * 0.5;
+         yCam -= float(sin(xrotrad)) * 0.5;
          break;
 
       case '+':
-         camera.zoomIn();
+         cRadius -= 0.5f;
          break;
 
       case '-':
-         camera.zoomOut();
-         break;
+          cRadius += 0.5f;
+          break;
    }
 
 }
@@ -132,7 +187,6 @@ int main(int argc, char** argv) {
    glutInitWindowSize(650, 500);
    glutInitWindowPosition(400, 400);
    glutCreateWindow("OpenGL");
-   std::cout << "Controls: Use WSAD and the mouse to move around, + and - to zoom!" << std::endl;
    initScene();
    glutDisplayFunc(renderScene);
    glutIdleFunc(renderScene);

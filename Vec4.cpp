@@ -31,7 +31,7 @@ Vec4<T>::~Vec4() {
    Copy constructor
 */
 template <class T>
-Vec4<T>::Vec4(const Vec4& v) : _x(v.x), _y(v.y), _z(v.z), _w(v.w){
+Vec4<T>::Vec4(const Vec4& v) : _x(v.x()), _y(v.y()), _z(v.z()), _w(v.w()){
 
 }
 

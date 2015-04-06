@@ -12,34 +12,13 @@
 #include <cmath>
 
 #include "Shader.hpp"
-#include "Camera.hpp"
-#include "Light.hpp"
+#include "World.hpp"
 
 // camera
-Caffeina::Camera camera;
-// shader object
+Caffeina::World world;
+// shader
 Caffeina::Shader shader;
-// light object
-Caffeina::Light light;
 
-void DrawGround(){
-   // How far on the Z-Axis and X-Axis the ground extends
-   GLfloat fExtent = 30.0f;
-   // The size of the separation between points
-   GLfloat fStep = 1.0f;
-   GLfloat y = -0.4f;
-   GLint iLine;
-   glColor3f(1.0,1.0,1.0);
-   glBegin(GL_LINES);
-   
-   for(iLine = -fExtent; iLine <= fExtent; iLine += fStep) {
-      glVertex3f(iLine, y, fExtent);    // Draw Z lines
-      glVertex3f(iLine, y, -fExtent);
-      glVertex3f(fExtent, y, iLine);
-      glVertex3f(-fExtent, y, iLine);
-   }
-   glEnd();
-}
 
 void initScene() {
    glEnable(GL_DEPTH_TEST);
@@ -47,6 +26,7 @@ void initScene() {
    glEnable(GL_SMOOTH);
    glShadeModel(GL_SMOOTH);
    shader.init("shader.vert", "shader.frag");
+   Caffeina::World::generateGrid();
 }
 
 void draw() {
@@ -59,13 +39,13 @@ void renderScene() {
 
    glLoadIdentity();
    // turn on lights
-   light.turnOn();
+   world.light().turnOn();
    // enable camera movement
-   camera.enable();
+   world.camera().enable();
 
    shader.bind();
    // draw ground
-   DrawGround();
+   Caffeina::World::grid();
 
    // draw primitives
    draw();
@@ -89,42 +69,41 @@ void reshape(int width, int height) {
 }
 
 void mouseMovement(int x, int y) {
-   camera.handleMouse(x, y);
+   world.camera().handleMouse(x, y);
 }
 
 void keyHandler(unsigned char key, int x, int y) {
    switch(key) {
       case 'A':
       case 'a':
-         camera.moveLeft();
+         world.camera().moveLeft();
          break;
 
       case 'D':
       case 'd':
-         camera.moveRight();
+         world.camera().moveRight();
          break;
 
       case 's':
       case 'S':
-         camera.moveBackward();
+         world.camera().moveBackward();
          break;
 
       case 'W':
       case 'w':
-         camera.moveForward();
+         world.camera().moveForward();
          break;
 
       case '+':
-         camera.zoomIn();
+         world.camera().zoomIn();
          break;
 
       case '-':
-         camera.zoomOut();
+         world.camera().zoomOut();
          break;
    }
 
 }
-
 
 int main(int argc, char** argv) {
    glutInit(&argc, argv);
