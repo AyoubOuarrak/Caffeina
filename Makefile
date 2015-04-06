@@ -5,7 +5,7 @@ example4.o:
 	g++ -c example4.cpp -o example4.o     
 
 World.o:
-    g++ -c World.cpp -o World.o
+	g++ -c World.cpp -o World.o
     
 Shader.o:
 	g++ -c Shader.cpp -o Shader.o
