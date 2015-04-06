@@ -1,4 +1,4 @@
-main: example3.o Shader.o Light.o Camera.o
+main: example4.o Shader.o Light.o Camera.o World.o
 	  g++  -std=c++11 -g -Wall -Wextra example4.o World.o Shader.o Light.o Camera.o -o main -framework GLUT -framework OpenGL -framework Cocoa
 
 example4.o:
